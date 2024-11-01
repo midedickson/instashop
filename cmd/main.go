@@ -19,15 +19,13 @@ import (
 	"github.com/midedickson/instashop/internal/services"
 )
 
-func init() {
-	err := godotenv.Load()
-	if err != nil {
-		log.Fatal("Error loading .env file")
-	}
-}
-
 func main() {
 	fmt.Println("Starting Instashop Application...")
+
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatal("Error loading .env file: ", err)
+	}
 
 	// start the database connection and auto migrate
 	database.ConnectToDB()

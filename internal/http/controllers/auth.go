@@ -6,7 +6,6 @@ import (
 	"net/http"
 
 	"github.com/midedickson/instashop/internal/dto"
-	"github.com/midedickson/instashop/internal/entity"
 	"github.com/midedickson/instashop/utils"
 )
 
@@ -28,6 +27,7 @@ func (c *Controller) CreateUser(w http.ResponseWriter, r *http.Request) {
 		utils.Dispatch500Error(w, err)
 		return
 	}
+	log.Println(user, err, "create user result")
 	utils.Dispatch200(w, "User created successfully", user)
 }
 
@@ -66,10 +66,7 @@ func (c *Controller) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	userDetails := &struct {
-		UserDetails *entity.User `json:"user_details"`
-		AccessToken string       `json:"access_token"`
-	}{
+	userDetails := &dto.LoginResponse{
 		UserDetails: userClaim,
 		AccessToken: accessToken,
 	}

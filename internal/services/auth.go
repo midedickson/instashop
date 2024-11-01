@@ -41,6 +41,7 @@ func (u *UserService) GetUserByID(id uint) (*entity.User, error) {
 	return &entity.User{ID: id, Email: "dicksonmide@gmil.com"}, nil
 }
 
+// Auth - related methods
 func (u *UserService) VerifyUserPasswordWithHash(password string) bool {
 	// implement password verification logic here
 	return true
