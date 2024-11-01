@@ -5,7 +5,8 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/midedickson/instashop/dto"
+	"github.com/midedickson/instashop/internal/dto"
+	"github.com/midedickson/instashop/internal/entity"
 	"github.com/midedickson/instashop/utils"
 )
 
@@ -22,7 +23,7 @@ func (c *Controller) CreateUser(w http.ResponseWriter, r *http.Request) {
 		utils.Dispatch400Error(w, "Invalid Payload, email and password is required", nil)
 		return
 	}
-	user, err := c.userUseCase.CreateUser(createUserPayload)
+	user, err := c.userService.CreateUser(createUserPayload)
 	if err != nil {
 		utils.Dispatch500Error(w, err)
 		return
@@ -44,5 +45,33 @@ func (c *Controller) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// userClaim := c.userUseCase
+	userClaim, err := c.userService.GetUserByEmail(loginPayload.Email)
+	if err != nil {
+		utils.Dispatch404Error(w, "User not found", nil)
+		return
+	}
+	if !c.userService.VerifyUserPasswordWithHash(loginPayload.Password) {
+		utils.Dispatch403Error(w, "Invalid password", nil)
+		return
+	}
+
+	if !userClaim.IsActive {
+		utils.Dispatch403Error(w, "User is not active", nil)
+		return
+	}
+
+	accessToken, err := c.userService.GenerateJwtTokenForUser(userClaim)
+	if err != nil {
+		utils.Dispatch500Error(w, err)
+		return
+	}
+
+	userDetails := &struct {
+		UserDetails *entity.User `json:"user_details"`
+		AccessToken string       `json:"access_token"`
+	}{
+		UserDetails: userClaim,
+		AccessToken: accessToken,
+	}
+	utils.Dispatch200(w, "Logged in successfully", userDetails)
 }

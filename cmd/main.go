@@ -13,10 +13,10 @@ import (
 	"github.com/joho/godotenv"
 	"github.com/midedickson/instashop/config"
 	"github.com/midedickson/instashop/database"
-	"github.com/midedickson/instashop/http"
-	"github.com/midedickson/instashop/http/controllers"
-	"github.com/midedickson/instashop/http/routes"
-	"github.com/midedickson/instashop/usecases"
+	"github.com/midedickson/instashop/internal/http"
+	"github.com/midedickson/instashop/internal/http/controllers"
+	"github.com/midedickson/instashop/internal/http/routes"
+	"github.com/midedickson/instashop/internal/services"
 )
 
 func init() {
@@ -37,8 +37,8 @@ func main() {
 	// create the router
 	router := mux.NewRouter()
 
-	// create usecases
-	userUseCase := usecases.NewUserUseCaseService()
+	// create services
+	userUseCase := services.NewUserService()
 
 	// create controller with usecases
 	controller := controllers.NewController(userUseCase)

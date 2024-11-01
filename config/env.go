@@ -28,3 +28,7 @@ func GetPort() int {
 	}
 	return port
 }
+
+func GetJwtSecret() string {
+	return os.Getenv("JWT_SECRET")
+}
