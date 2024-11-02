@@ -55,6 +55,13 @@ func Dispatch200(w http.ResponseWriter, msg string, data any) {
 	w.Write(WriteInfo(msg, data))
 }
 
+// 204 - NO CONTENT
+func Dispatch204(w http.ResponseWriter) {
+	AddDefaultHeaders(w)
+	w.WriteHeader(http.StatusNoContent)
+	// w.Write(WriteInfo("", ""))
+}
+
 func WriteInfo(message string, data any) []byte {
 	response := APIResponse{
 		Success: true,

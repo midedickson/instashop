@@ -86,7 +86,7 @@ func (c *Controller) AdminLogin(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if userClaim.Role == constants.ADMIN {
+	if userClaim.Role == constants.ADMIN_ROLE {
 		utils.Dispatch403Error(w, "You are not authorized to access this endpoint", nil)
 		return
 	}

@@ -1,6 +1,6 @@
 package constants
 
 const (
-	ADMIN    = "admin"
-	CUSTOMER = "customer"
+	ADMIN_ROLE    = "admin"
+	CUSTOMER_ROLE = "customer"
 )

@@ -32,10 +32,11 @@ func main() {
 	router := mux.NewRouter()
 
 	// create services
-	userUseCase := services.NewUserService()
+	userService := services.NewUserService()
+	productService := services.NewProductService()
 
 	// create controller with usecases
-	controller := controllers.NewController(userUseCase)
+	controller := controllers.NewController(userService, productService)
 
 	// connect routes
 	routes.ConnectRoutes(router, controller)

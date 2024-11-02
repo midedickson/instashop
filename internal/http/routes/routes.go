@@ -12,6 +12,7 @@ import (
 
 func ConnectRoutes(r *mux.Router, controller *controllers.Controller) {
 	r.HandleFunc("/", controller.Hello).Methods("GET")
+	// authentication routes
 	r.Handle("/auth/signup",
 		middlewares.Chain(
 			http.HandlerFunc(controller.CreateUser),
@@ -38,7 +39,32 @@ func ConnectRoutes(r *mux.Router, controller *controllers.Controller) {
 			middlewares.ValidatePayloadMiddleware(&dto.ActivateUserPayload{}, constants.ActivateUserPayloadCtxKey{}),
 		)).Methods("POST")
 
-	// Create a subrouter for authenticated routes
+	// subrouter for authenticated routes
 	protected := r.PathPrefix("").Subrouter()
 	protected.Use(middlewares.AuthMiddleware)
+
+	// product management routes
+	protected.Handle("/products",
+		middlewares.Chain(
+			http.HandlerFunc(controller.GetAllProducts),
+		)).Methods("GET")
+
+	// admin-only management routes
+	protected.Handle("/products",
+		middlewares.Chain(
+			http.HandlerFunc(controller.CreateProduct),
+			middlewares.PermissionMiddleware(constants.ADMIN_ROLE),
+		)).Methods("POST")
+
+	protected.Handle("/products/{id}",
+		middlewares.Chain(
+			http.HandlerFunc(controller.UpdateProduct),
+			middlewares.PermissionMiddleware(constants.ADMIN_ROLE),
+		)).Methods("PUT")
+
+	protected.Handle("/products/{id}",
+		middlewares.Chain(
+			http.HandlerFunc(controller.DeleteProduct),
+			middlewares.PermissionMiddleware(constants.ADMIN_ROLE),
+		)).Methods("GET")
 }
