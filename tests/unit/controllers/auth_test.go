@@ -19,8 +19,9 @@ func TestCreateUser(t *testing.T) {
 
 	mockUserService := new(mocks.MockUserService)
 	mockProductService := new(mocks.MockProductService)
+	mockOrderService := new(mocks.MockOrderService)
 
-	ctrl := controllers.NewController(mockUserService, mockProductService)
+	ctrl := controllers.NewController(mockUserService, mockProductService, mockOrderService)
 	handler := http.HandlerFunc(ctrl.CreateUser)
 
 	t.Run("successfully create a new user", func(t *testing.T) {

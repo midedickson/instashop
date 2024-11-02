@@ -44,10 +44,7 @@ func ConnectRoutes(r *mux.Router, controller *controllers.Controller) {
 	protected.Use(middlewares.AuthMiddleware)
 
 	// product management routes
-	protected.Handle("/products",
-		middlewares.Chain(
-			http.HandlerFunc(controller.GetAllProducts),
-		)).Methods("GET")
+	protected.HandleFunc("/products", controller.GetAllProducts).Methods("GET")
 
 	// admin-only management routes
 	protected.Handle("/products",
@@ -67,4 +64,25 @@ func ConnectRoutes(r *mux.Router, controller *controllers.Controller) {
 			http.HandlerFunc(controller.DeleteProduct),
 			middlewares.PermissionMiddleware(constants.ADMIN_ROLE),
 		)).Methods("GET")
+
+	// order management routes
+	protected.HandleFunc("/orders", controller.CreateOrder).Methods("POST")
+
+	protected.HandleFunc("/orders", controller.GetAllOrdersForUser).Methods("GET")
+
+	protected.Handle("/orders/all",
+		middlewares.Chain(
+			http.HandlerFunc(controller.GetAllOrders),
+			middlewares.PermissionMiddleware(constants.ADMIN_ROLE),
+		)).Methods("GET")
+
+	protected.Handle("/orders/{id}",
+		middlewares.Chain(
+			http.HandlerFunc(controller.UpdateOrderStatus),
+			middlewares.PermissionMiddleware(constants.ADMIN_ROLE),
+		)).Methods("PATCH")
+
+	protected.HandleFunc("/orders/{id}", controller.GetOrderById).Methods("GET")
+
+	protected.HandleFunc("/orders/{id}/cancel", controller.CancelOrder).Methods("PATCH")
 }

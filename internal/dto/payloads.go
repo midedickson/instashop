@@ -53,3 +53,27 @@ type UpdateProductPayload struct {
 func (p *UpdateProductPayload) Validate() bool {
 	return p.Name != ""
 }
+
+type CreateOrderPayload struct {
+	ProductIds []uint `json:"products"`
+}
+
+func (p *CreateOrderPayload) Validate() bool {
+	return len(p.ProductIds) > 0
+}
+
+type CancelOrderPayload struct {
+	OrderID uint `json:"order_id"`
+}
+
+func (p *CancelOrderPayload) Validate() bool {
+	return true
+}
+
+type UpdateOrderStatusPayload struct {
+	Status string `json:"status"`
+}
+
+func (p *UpdateOrderStatusPayload) Validate() bool {
+	return p.Status != ""
+}

@@ -34,9 +34,10 @@ func main() {
 	// create services
 	userService := services.NewUserService()
 	productService := services.NewProductService()
+	orderService := services.NewOrderService(productService)
 
 	// create controller with usecases
-	controller := controllers.NewController(userService, productService)
+	controller := controllers.NewController(userService, productService, orderService)
 
 	// connect routes
 	routes.ConnectRoutes(router, controller)

@@ -55,6 +55,13 @@ func Dispatch200(w http.ResponseWriter, msg string, data any) {
 	w.Write(WriteInfo(msg, data))
 }
 
+// 201 - CREATED
+func Dispatch201(w http.ResponseWriter, msg string, data any) {
+	AddDefaultHeaders(w)
+	w.WriteHeader(http.StatusCreated)
+	w.Write(WriteInfo(msg, data))
+}
+
 // 204 - NO CONTENT
 func Dispatch204(w http.ResponseWriter) {
 	AddDefaultHeaders(w)
