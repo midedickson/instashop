@@ -16,6 +16,7 @@ type IUserService interface {
 	GetUserByID(id uint) (*entity.User, error)
 	VerifyUserPasswordWithHash(password string) bool
 	GenerateJwtTokenForUser(user *entity.User) (string, error)
+	ActivateUser(activateUserPayload dto.ActivateUserPayload) (*entity.User, error)
 }
 
 type UserService struct{}
@@ -43,14 +44,18 @@ func (u *UserService) GetUserByID(id uint) (*entity.User, error) {
 
 // Auth - related methods
 func (u *UserService) VerifyUserPasswordWithHash(password string) bool {
-	// implement password verification logic here
+	// todo: implement password verification logic here
 	return true
 }
 
 func (u *UserService) GenerateJwtTokenForUser(user *entity.User) (string, error) {
-
 	return token.GenerateHS256Token(&token.TokenGenOptions{
 		Payload:    user.ToJwtPayload(),
-		ExpiryDate: time.Now().Add(constants.JWT_DEFAULT_EXPIRATION_TIME),
+		ExpiryDate: time.Now().UTC().Add(constants.JWT_DEFAULT_EXPIRATION_TIME),
 	})
+}
+
+func (u *UserService) ActivateUser(activateUserPayload dto.ActivateUserPayload) (*entity.User, error) {
+	// todo: implement user activation logic here
+	return &entity.User{ID: uint(34), Email: activateUserPayload.Email}, nil
 }

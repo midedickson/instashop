@@ -5,8 +5,16 @@ import (
 	"os"
 	"strconv"
 
+	"github.com/joho/godotenv"
 	"github.com/midedickson/instashop/constants"
 )
+
+func LoadEnv() {
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatal("Error loading .env file: ", err)
+	}
+}
 
 func GetDBUrl() string {
 	return os.Getenv("DATABASE_URL")

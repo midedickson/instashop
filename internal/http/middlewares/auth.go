@@ -1,17 +1,33 @@
 package middlewares
 
-import "net/http"
+import (
+	"context"
+	"net/http"
+
+	"github.com/midedickson/instashop/constants"
+	"github.com/midedickson/instashop/token"
+	"github.com/midedickson/instashop/utils"
+)
 
 // AuthMiddleware checks if user is authenticated
 func AuthMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		token := r.Header.Get("Authorization")
-		if token == "" {
-			http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		accessToken := token.ExtractFromHeader(r)
+		if accessToken == "" {
+			utils.Dispatch403Error(w, "Invalid or Expired token", nil)
 			return
 		}
-		// Add your token validation logic here
-		// You might want to parse JWT, check session, etc.
+
+		tokenValid, claim, errTokenVerify := token.Verify(&token.TokenVerifyOptions{SignedToken: accessToken})
+		if errTokenVerify != nil || !tokenValid {
+			utils.Dispatch403Error(w, "Invalid or Expired token", errTokenVerify)
+			return
+		}
+
+		ctx := context.WithValue(r.Context(), constants.AuthClaimCtxKey{}, claim.Payload)
+		ctx = context.WithValue(ctx, constants.UserRoleCtxKey{}, claim.Payload["role"])
+
+		r = r.WithContext(ctx)
 
 		next.ServeHTTP(w, r)
 	})
@@ -21,12 +37,10 @@ func AuthMiddleware(next http.Handler) http.Handler {
 func PermissionMiddleware(requiredRole string) Middleware {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			// Get user role from context (usually set by AuthMiddleware)
-			// This is just an example - adjust based on your auth implementation
-			userRole := r.Context().Value("userRole")
+			userRole := r.Context().Value(constants.UserRoleCtxKey{}).(string)
 
 			if userRole != requiredRole {
-				http.Error(w, "Forbidden", http.StatusForbidden)
+				utils.Dispatch403Error(w, "Invalid or Expired token", utils.ErrForbidden)
 				return
 			}
 

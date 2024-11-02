@@ -35,3 +35,8 @@ func (m *MockUserService) GenerateJwtTokenForUser(user *entity.User) (string, er
 	args := m.Called(user)
 	return args.String(0), args.Error(1)
 }
+
+func (m *MockUserService) ActivateUser(activateUserPayload dto.ActivateUserPayload) (*entity.User, error) {
+	args := m.Called(activateUserPayload)
+	return args.Get(0).(*entity.User), args.Error(1)
+}

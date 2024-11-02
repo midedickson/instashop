@@ -10,7 +10,6 @@ import (
 	"time"
 
 	"github.com/gorilla/mux"
-	"github.com/joho/godotenv"
 	"github.com/midedickson/instashop/config"
 	"github.com/midedickson/instashop/database"
 	"github.com/midedickson/instashop/internal/http"
@@ -22,10 +21,7 @@ import (
 func main() {
 	fmt.Println("Starting Instashop Application...")
 
-	err := godotenv.Load()
-	if err != nil {
-		log.Fatal("Error loading .env file: ", err)
-	}
+	config.LoadEnv()
 
 	// start the database connection and auto migrate
 	database.ConnectToDB()
