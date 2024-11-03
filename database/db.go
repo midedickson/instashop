@@ -1,10 +1,12 @@
 package database
 
 import (
+	"fmt"
 	"log"
 
+	"github.com/midedickson/instashop/config"
 	"github.com/midedickson/instashop/database/models"
-	"gorm.io/driver/sqlite"
+	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
 
@@ -13,7 +15,16 @@ var (
 )
 
 func ConnectToDB() {
-	d, err := gorm.Open(sqlite.Open("db.sqlite"), &gorm.Config{})
+	dsn := fmt.Sprintf(
+		"host=%s user=%s password=%s dbname=%s port=%s sslmode=disable",
+		config.GetDBHost(),
+		config.GetDBUser(),
+		config.GetDBPassword(),
+		config.GetDBName(),
+		config.GetDBPort(),
+	)
+
+	d, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {
 		panic(err)
 	}
@@ -23,7 +34,7 @@ func ConnectToDB() {
 
 func AutoMigrate() {
 	log.Println("Auto Migrating Models...")
-	err := DB.AutoMigrate(&models.User{})
+	err := DB.AutoMigrate(&models.User{}, &models.Product{}, &models.Order{})
 	if err != nil {
 		panic(err)
 	}

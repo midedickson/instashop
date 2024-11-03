@@ -10,15 +10,6 @@ import (
 	"github.com/midedickson/instashop/utils"
 )
 
-type IUserService interface {
-	CreateUser(createUserPayload dto.UserAuthPayload) (*entity.User, error)
-	GetUserByEmail(email string) (*entity.User, error)
-	GetUserByID(id uint) (*entity.User, error)
-	VerifyUserPasswordWithHash(password string) bool
-	GenerateJwtTokenForUser(user *entity.User) (string, error)
-	ActivateUser(activateUserPayload dto.ActivateUserPayload) (*entity.User, error)
-}
-
 type UserService struct{}
 
 func NewUserService() *UserService {

@@ -25,17 +25,11 @@ var validOrderTransitions = map[string]map[string]bool{
 	constants.ORDER_CANCELLED: {},
 }
 
-type IOrderService interface {
-	CreateOrder(orderPayload dto.CreateOrderPayload, user *entity.User) (*entity.Order, error)
-	GetAllOrdersForUser(userID uint) ([]*entity.Order, error)
-	GetOrderByID(id uint) (*entity.Order, error)
-	UpdateOrderStatus(orderID uint, updateStatusPayload dto.UpdateOrderStatusPayload) (*entity.Order, error)
-	CancelOrder(orderID, userId uint) error
-	GetAllOrders() ([]*entity.Order, error)
+type IProductService interface {
+	GetAllProducts() ([]*entity.Product, error)
 }
 
 type OrderService struct {
-	// dependency injection for repositories
 	productService IProductService
 }
 

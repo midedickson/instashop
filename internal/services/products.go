@@ -5,14 +5,6 @@ import (
 	"github.com/midedickson/instashop/internal/entity"
 )
 
-type IProductService interface {
-	CreateProduct(createProductPayload dto.CreateProductPayload) (*entity.Product, error)
-	GetAllProducts() ([]*entity.Product, error)
-	GetProductByID(id uint) (*entity.Product, error)
-	UpdateProduct(id uint, updateProductPayload dto.UpdateProductPayload) (*entity.Product, error)
-	DeleteProduct(id uint) error
-}
-
 type ProductService struct{}
 
 func NewProductService() *ProductService {

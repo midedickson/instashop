@@ -1,10 +1,10 @@
 package entity
 
 type User struct {
-	ID       uint
-	Email    string
-	IsActive bool
-	Role     string
+	ID       uint   `json:"id"`
+	Email    string `json:"email"`
+	Role     string `json:"role"`
+	IsActive bool   `json:"is_active"`
 }
 
 func (u *User) ToJwtPayload() map[string]interface{} {
