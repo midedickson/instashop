@@ -1,10 +1,10 @@
 package entity
 
-import "github.com/shopspring/decimal"
+import "github.com/midedickson/instashop/constants"
 
 type Product struct {
 	ID       uint
 	Name     string
-	Price    decimal.Decimal
+	Price    constants.Money
 	Quantity int
 }

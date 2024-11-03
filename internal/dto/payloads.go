@@ -1,7 +1,5 @@
 package dto
 
-import "github.com/shopspring/decimal"
-
 type UserAuthPayload struct {
 	Email    string `json:"email"`
 	Password string `json:"password"`
@@ -28,9 +26,9 @@ func (p *ActivateUserPayload) Validate() bool {
 }
 
 type CreateProductPayload struct {
-	Name     string  `json:"name"`
-	Price    float64 `json:"price"`
-	Quantity int     `json:"quantity"`
+	Name     string `json:"name"`
+	Price    int64  `json:"price"`
+	Quantity int    `json:"quantity"`
 }
 
 func (p *CreateProductPayload) Validate() bool {
@@ -40,26 +38,27 @@ func (p *CreateProductPayload) Validate() bool {
 	return true
 }
 
-func (p *CreateProductPayload) DecimalPrice() decimal.Decimal {
-	return decimal.NewFromFloat(p.Price)
-}
-
 type UpdateProductPayload struct {
-	Name     string  `json:"name"`
-	Price    float64 `json:"price"`
-	Quantity int     `json:"quantity"`
+	Name     string `json:"name"`
+	Price    int64  `json:"price"`
+	Quantity int    `json:"quantity"`
 }
 
 func (p *UpdateProductPayload) Validate() bool {
 	return p.Name != ""
 }
 
+type CreateOrderItemPayload struct {
+	ProductID uint `json:"product_id"`
+	Quantity  int  `json:"quantity"`
+}
+
 type CreateOrderPayload struct {
-	ProductIds []uint `json:"products"`
+	Items []CreateOrderItemPayload `json:"products"`
 }
 
 func (p *CreateOrderPayload) Validate() bool {
-	return len(p.ProductIds) > 0
+	return len(p.Items) > 0
 }
 
 type CancelOrderPayload struct {

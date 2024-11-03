@@ -30,11 +30,13 @@ func main() {
 
 	// create repositories
 	userRepository := repository.NewUserRepository(database.DB)
+	productRepository := repository.NewProductRepository(database.DB)
+	orderRepository := repository.NewOrderRepository(database.DB, productRepository)
 
 	// create services
 	userService := services.NewUserService(userRepository)
-	productService := services.NewProductService()
-	orderService := services.NewOrderService(productService)
+	productService := services.NewProductService(productRepository)
+	orderService := services.NewOrderService(productService, orderRepository)
 
 	// create controller with usecases
 	controller := controllers.NewController(userService, productService, orderService)

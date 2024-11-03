@@ -1,7 +1,10 @@
 package services
 
 import (
+	"errors"
+
 	"github.com/midedickson/instashop/constants"
+	"github.com/midedickson/instashop/database/models"
 	"github.com/midedickson/instashop/internal/dto"
 	"github.com/midedickson/instashop/internal/entity"
 	"github.com/midedickson/instashop/utils"
@@ -23,39 +26,63 @@ var validOrderTransitions = map[string]map[string]bool{
 		constants.ORDER_COMPLETED: true,
 	},
 	constants.ORDER_CANCELLED: {},
+	constants.ORDER_COMPLETED: {},
 }
 
 type IProductService interface {
 	GetAllProducts() ([]*entity.Product, error)
+	GetProductByID(id uint) (*entity.Product, error)
+}
+type OrderRepository interface {
+	GetAllOrdersForUser(userID uint) ([]*models.Order, error)
+	GetAllOrders() ([]*models.Order, error)
+	CreateOrder(createDBOrder dto.CreateDBOrder) (*models.Order, error)
+	GetOrderByID(id uint) (*models.Order, error)
+	UpdateOrderStatus(status string, orderId uint) (*models.Order, error)
+	CancelOrder(id uint) error
 }
 
 type OrderService struct {
-	productService IProductService
+	productService  IProductService
+	orderRepository OrderRepository
 }
 
-func NewOrderService(productService IProductService) *OrderService {
-	return &OrderService{productService: productService}
+func NewOrderService(productService IProductService, orderRepository OrderRepository) *OrderService {
+	return &OrderService{productService: productService, orderRepository: orderRepository}
 }
 
 func (o *OrderService) CreateOrder(orderPayload dto.CreateOrderPayload, user *entity.User) (*entity.Order, error) {
 	// create new order with products from product service
-	products, err := o.productService.GetAllProducts()
+	var orderItems []dto.CreateOrderItemPayload
+	for _, item := range orderPayload.Items {
+		product, err := o.productService.GetProductByID(item.ProductID)
+		if err != nil {
+			continue
+		}
+
+		orderItems = append(orderItems, dto.CreateOrderItemPayload{
+			ProductID: product.ID,
+			Quantity:  item.Quantity,
+		})
+	}
+
+	if len(orderItems) == 0 {
+		return nil, errors.New("no valid products in order")
+	}
+
+	// create new order with products from product service
+	createDBOrder := dto.CreateDBOrder{
+		UserID: user.ID,
+		Items:  orderItems,
+	}
+
+	order, err := o.orderRepository.CreateOrder(createDBOrder)
+
 	if err != nil {
-		// handle error
 		return nil, err
 	}
 
-	order := &entity.Order{
-		ID:       uint(1),
-		OwnerID:  user.ID,
-		Status:   "pending",
-		Products: products,
-	}
-
-	// save the order to the database
-	//...
-
-	return order, nil
+	return order.ToEntity(), nil
 }
 
 func (o *OrderService) GetAllOrdersForUser(userID uint) ([]*entity.Order, error) {
@@ -66,10 +93,7 @@ func (o *OrderService) GetAllOrdersForUser(userID uint) ([]*entity.Order, error)
 			ID:      uint(1),
 			OwnerID: userID,
 			Status:  "pending",
-			Products: []*entity.Product{
-				{ID: uint(1), Name: "Product 1"},
-				{ID: uint(2), Name: "Product 2"},
-			},
+			Items:   []*entity.OrderItem{},
 		},
 	}
 
@@ -79,19 +103,12 @@ func (o *OrderService) GetAllOrdersForUser(userID uint) ([]*entity.Order, error)
 func (o *OrderService) GetAllOrders() ([]*entity.Order, error) {
 
 	// retrieve all orders from the database for the given user
-	orders := []*entity.Order{
-		{
-			ID:      uint(1),
-			OwnerID: uint(1),
-			Status:  "pending",
-			Products: []*entity.Product{
-				{ID: uint(1), Name: "Product 1"},
-				{ID: uint(2), Name: "Product 2"},
-			},
-		},
+	orders, err := o.orderRepository.GetAllOrders()
+	if err != nil {
+		return nil, err
 	}
 
-	return orders, nil
+	return utils.MapConcurrent(orders, func(order *models.Order) *entity.Order { return order.ToEntity() }), nil
 }
 
 func (o *OrderService) GetOrderByID(id uint) (*entity.Order, error) {
@@ -99,10 +116,7 @@ func (o *OrderService) GetOrderByID(id uint) (*entity.Order, error) {
 		ID:      uint(1),
 		OwnerID: uint(23),
 		Status:  "pending",
-		Products: []*entity.Product{
-			{ID: uint(1), Name: "Product 1"},
-			{ID: uint(2), Name: "Product 2"},
-		},
+		Items:   []*entity.OrderItem{},
 	}
 
 	return order, nil
@@ -128,13 +142,14 @@ func (o *OrderService) UpdateOrderStatus(orderID uint, updateStatusPayload dto.U
 	if _, ok := validOrderTransitions[order.Status][updateStatusPayload.Status]; !ok {
 		return nil, utils.ErrInvalidOrderTransition
 	}
-	// update the status of the order
-	order.Status = updateStatusPayload.Status
 
 	// save the updated order to the database
-	//...
+	dbOrder, err := o.orderRepository.UpdateOrderStatus(updateStatusPayload.Status, orderID)
+	if err != nil {
+		return nil, err
+	}
 
-	return order, nil
+	return dbOrder.ToEntity(), nil
 }
 
 func (o *OrderService) CancelOrder(orderID, userId uint) error {
@@ -154,11 +169,10 @@ func (o *OrderService) CancelOrder(orderID, userId uint) error {
 		return utils.ErrInvalidOrderTransition
 	}
 
-	// update the status of the order
-	order.Status = constants.ORDER_CANCELLED
-
 	// save the updated order to the database
-	//...
-
+	err = o.orderRepository.CancelOrder(orderID)
+	if err != nil {
+		return err
+	}
 	return nil
 }
