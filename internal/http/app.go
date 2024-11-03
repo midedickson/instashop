@@ -2,7 +2,6 @@ package http
 
 import (
 	"net/http"
-	"strconv"
 
 	"github.com/gorilla/mux"
 )
@@ -10,14 +9,14 @@ import (
 type App struct {
 	http.Server
 	host string
-	port int
+	port string
 }
 
-func NewApp(host string, port int, router *mux.Router) *App {
+func NewApp(host, port string, router *mux.Router) *App {
 	return &App{
 		host:   host,
 		port:   port,
-		Server: http.Server{Addr: ":" + strconv.Itoa(port), Handler: router},
+		Server: http.Server{Addr: ":" + port, Handler: router},
 	}
 }
 

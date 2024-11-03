@@ -3,7 +3,6 @@ package config
 import (
 	"log"
 	"os"
-	"strconv"
 
 	"github.com/joho/godotenv"
 	"github.com/midedickson/instashop/constants"
@@ -16,14 +15,10 @@ func LoadEnv() {
 	}
 }
 
-func GetDBUrl() string {
-	return os.Getenv("DATABASE_URL")
-}
-
-func GetPort() int {
-	port, err := strconv.Atoi(os.Getenv("PORT"))
-	if err != nil {
-		log.Println("Error:", err, "using default port:", constants.PORT)
+func GetPort() string {
+	port := os.Getenv("PORT")
+	if port == "" {
+		log.Println("using default port:", constants.PORT)
 		return constants.PORT
 	}
 	return port
@@ -34,21 +29,28 @@ func GetJwtSecret() string {
 }
 
 func GetDBHost() string {
-	return os.Getenv("DB_HOST")
+	return getEnvOrDefault("DB_HOST", "localhost")
 }
 
 func GetDBPort() string {
-	return os.Getenv("DB_PORT")
+	return getEnvOrDefault("DB_PORT", "5432")
 }
 
 func GetDBName() string {
-	return os.Getenv("DB_NAME")
+	return getEnvOrDefault("DB_NAME", "instashop")
 }
 
 func GetDBUser() string {
-	return os.Getenv("DB_USER")
+	return getEnvOrDefault("DB_USER", "postgres")
 }
 
 func GetDBPassword() string {
-	return os.Getenv("DB_PASSWORD")
+	return getEnvOrDefault("DB_PASSWORD", "password")
+}
+
+func getEnvOrDefault(key, defaultValue string) string {
+	if value := os.Getenv(key); value != "" {
+		return value
+	}
+	return defaultValue
 }

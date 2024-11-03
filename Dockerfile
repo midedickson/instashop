@@ -1,5 +1,5 @@
 # Build stage
-FROM golang:1.21-alpine AS builder
+FROM golang:1.22-alpine AS builder
 
 # Install necessary build tools
 RUN apk add --no-cache git curl
@@ -17,16 +17,20 @@ RUN go mod download
 COPY . .
 
 # Build the application
-RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o main ./cmd/api
+RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o main ./cmd
 
 # Final stage
-FROM alpine:3.18
+FROM debian:bullseye-slim
 
 # Install necessary runtime dependencies
-RUN apk --no-cache add ca-certificates curl tzdata
+RUN apt-get update && apt-get install -y \
+    ca-certificates \
+    curl \
+    tzdata \
+    && rm -rf /var/lib/apt/lists/*
 
 # Create non-root user
-RUN adduser -D -g '' appuser
+RUN useradd -m appuser
 
 # Set working directory
 WORKDIR /app
@@ -34,14 +38,19 @@ WORKDIR /app
 # Copy binary from builder
 COPY --from=builder /build/main .
 
-# Copy migrations
-COPY --from=builder /build/migrations ./migrations
+# Copy env file from builder
+COPY --from=builder /build/.env .
+
+# # Copy migrations
+# COPY --from=builder /build/migrations ./migrations
 
 # Change ownership of the application directory
 RUN chown -R appuser:appuser /app
 
 # Use non-root user
 USER appuser
+
+EXPOSE 8080
 
 # Command to run the executable
 CMD ["./main"]

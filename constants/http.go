@@ -2,5 +2,5 @@ package constants
 
 const (
 	// Default HTTP parameters
-	PORT = 9000
+	PORT = "9000"
 )
