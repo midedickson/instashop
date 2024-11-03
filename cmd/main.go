@@ -15,6 +15,7 @@ import (
 	"github.com/midedickson/instashop/internal/http"
 	"github.com/midedickson/instashop/internal/http/controllers"
 	"github.com/midedickson/instashop/internal/http/routes"
+	"github.com/midedickson/instashop/internal/repository"
 	"github.com/midedickson/instashop/internal/services"
 )
 
@@ -25,20 +26,21 @@ func main() {
 
 	// start the database connection and auto migrate
 	database.ConnectToDB()
-	// make sure to close the DB connection on app close
 	database.AutoMigrate()
 
-	// create the router
-	router := mux.NewRouter()
+	// create repositories
+	userRepository := repository.NewUserRepository(database.DB)
 
 	// create services
-	userService := services.NewUserService()
+	userService := services.NewUserService(userRepository)
 	productService := services.NewProductService()
 	orderService := services.NewOrderService(productService)
 
 	// create controller with usecases
 	controller := controllers.NewController(userService, productService, orderService)
 
+	// create the router
+	router := mux.NewRouter()
 	// connect routes
 	routes.ConnectRoutes(router, controller)
 

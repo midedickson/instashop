@@ -28,7 +28,7 @@ func Verify(tokenVerifyOptions *TokenVerifyOptions) (bool, JWTClaim, error) {
 
 	token, err := jwt.ParseWithClaims(
 		tokenVerifyOptions.SignedToken,
-		JWTClaim{},
+		&jwtClaim,
 		func(t *jwt.Token) (any, error) {
 			return []byte(secret), nil
 		},
@@ -39,9 +39,9 @@ func Verify(tokenVerifyOptions *TokenVerifyOptions) (bool, JWTClaim, error) {
 		verificationError = err
 	}
 
-	if claims, ok := token.Claims.(JWTClaim); ok && token.Valid {
+	if claims, ok := token.Claims.(*JWTClaim); ok && token.Valid {
 		isValid = true
-		jwtClaim = claims
+		jwtClaim = *claims
 	} else if !ok {
 		verificationError = ErrParseToken
 	} else if claims.ExpiresAt.Unix() < time.Now().Local().Unix() {

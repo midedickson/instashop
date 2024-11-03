@@ -11,7 +11,7 @@ import (
 
 func (c *Controller) CreateOrder(w http.ResponseWriter, r *http.Request) {
 	// Create order logic
-	createOrderPayload := r.Context().Value(constants.CreateOrderPayloadCtxKey{}).(dto.CreateOrderPayload)
+	createOrderPayload := r.Context().Value(constants.CreateOrderPayloadCtxKey{}).(*dto.CreateOrderPayload)
 	userId := r.Context().Value(constants.UserIdCtxKey{}).(uint)
 
 	user, err := c.userService.GetUserByID(userId)
@@ -19,7 +19,7 @@ func (c *Controller) CreateOrder(w http.ResponseWriter, r *http.Request) {
 		utils.Dispatch500Error(w, err)
 		return
 	}
-	order, err := c.orderService.CreateOrder(createOrderPayload, user)
+	order, err := c.orderService.CreateOrder(*createOrderPayload, user)
 	if err != nil {
 		utils.Dispatch500Error(w, err)
 		return
@@ -77,9 +77,9 @@ func (c *Controller) UpdateOrderStatus(w http.ResponseWriter, r *http.Request) {
 		utils.Dispatch400Error(w, "Invalid Payload, order Id must be an integer", err)
 		return
 	}
-	updateOrderStatusPayload := r.Context().Value(constants.UpdateOrderStatusPayloadCtxKey{}).(dto.UpdateOrderStatusPayload)
+	updateOrderStatusPayload := r.Context().Value(constants.UpdateOrderStatusPayloadCtxKey{}).(*dto.UpdateOrderStatusPayload)
 
-	order, err := c.orderService.UpdateOrderStatus(uint(orderId), updateOrderStatusPayload)
+	order, err := c.orderService.UpdateOrderStatus(uint(orderId), *updateOrderStatusPayload)
 	if err != nil {
 		utils.Dispatch500Error(w, err)
 		return

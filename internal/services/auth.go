@@ -4,39 +4,78 @@ import (
 	"time"
 
 	"github.com/midedickson/instashop/constants"
+	"github.com/midedickson/instashop/database/models"
 	"github.com/midedickson/instashop/internal/dto"
 	"github.com/midedickson/instashop/internal/entity"
 	"github.com/midedickson/instashop/token"
 	"github.com/midedickson/instashop/utils"
 )
 
-type UserService struct{}
+// required repository interface
 
-func NewUserService() *UserService {
-	return &UserService{}
+type UserRepository interface {
+	GetUserByEmail(email string) (*models.User, error)
+	GetUserByID(id uint) (*models.User, error)
+	CreateNewUser(userParam dto.CreateDBUser) (*models.User, error)
+	UpdateUser(userParam dto.UpdateDBUser, userEmail string) (*models.User, error)
+}
+
+// UserService is responsible for managing user related operations
+type UserService struct {
+	userRepository UserRepository
+}
+
+func NewUserService(userRepository UserRepository) *UserService {
+	return &UserService{userRepository: userRepository}
 }
 
 func (u *UserService) CreateUser(createUserPayload dto.UserAuthPayload) (*entity.User, error) {
-	// check if user exists first
-	if _, err := u.GetUserByEmail(createUserPayload.Email); err == nil {
-		return nil, utils.ErrUserAlreadyExists
+	passwdHash, err := utils.HashPassword(createUserPayload.Password)
+	if err != nil {
+		return nil, err
 	}
-
-	return &entity.User{ID: uint(34), Email: createUserPayload.Email}, nil
+	var userRole string
+	if createUserPayload.Role == constants.ADMIN_ROLE {
+		userRole = constants.ADMIN_ROLE
+	} else {
+		userRole = constants.CUSTOMER_ROLE
+	}
+	newUser, err := u.userRepository.CreateNewUser(
+		dto.CreateDBUser{
+			Email:        createUserPayload.Email,
+			PasswordHash: passwdHash,
+			Role:         userRole,
+		},
+	)
+	if err != nil {
+		return nil, err
+	}
+	return newUser.ToEntity(), nil
 }
 
 func (u *UserService) GetUserByEmail(email string) (*entity.User, error) {
-	return &entity.User{ID: uint(34), Email: email}, nil
+	user, err := u.userRepository.GetUserByEmail(email)
+	if err != nil {
+		return nil, err
+	}
+	return user.ToEntity(), nil
 }
 
 func (u *UserService) GetUserByID(id uint) (*entity.User, error) {
-	return &entity.User{ID: id, Email: "dicksonmide@gmil.com"}, nil
+	user, err := u.userRepository.GetUserByID(id)
+	if err != nil {
+		return nil, err
+	}
+	return user.ToEntity(), nil
 }
 
 // Auth - related methods
-func (u *UserService) VerifyUserPasswordWithHash(password string) bool {
-	// todo: implement password verification logic here
-	return true
+func (u *UserService) VerifyUserPasswordWithHash(user *entity.User, password string) bool {
+	dbUser, err := u.userRepository.GetUserByID(user.ID)
+	if err != nil {
+		return false
+	}
+	return utils.CheckPassword(password, dbUser.PasswordHash)
 }
 
 func (u *UserService) GenerateJwtTokenForUser(user *entity.User) (string, error) {
@@ -47,6 +86,12 @@ func (u *UserService) GenerateJwtTokenForUser(user *entity.User) (string, error)
 }
 
 func (u *UserService) ActivateUser(activateUserPayload dto.ActivateUserPayload) (*entity.User, error) {
-	// todo: implement user activation logic here
-	return &entity.User{ID: uint(34), Email: activateUserPayload.Email}, nil
+	user, err := u.userRepository.UpdateUser(dto.UpdateDBUser{
+		IsActive: true,
+	}, activateUserPayload.Email)
+
+	if err != nil {
+		return nil, err
+	}
+	return user.ToEntity(), nil
 }

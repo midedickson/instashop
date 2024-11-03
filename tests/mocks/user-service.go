@@ -26,8 +26,8 @@ func (m *MockUserService) GetUserByID(id uint) (*entity.User, error) {
 	return args.Get(0).(*entity.User), args.Error(1)
 }
 
-func (m *MockUserService) VerifyUserPasswordWithHash(password string) bool {
-	args := m.Called(password)
+func (m *MockUserService) VerifyUserPasswordWithHash(user *entity.User, password string) bool {
+	args := m.Called(user, password)
 	return args.Bool(0)
 }
 

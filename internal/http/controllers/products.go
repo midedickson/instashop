@@ -10,9 +10,9 @@ import (
 )
 
 func (c *Controller) CreateProduct(w http.ResponseWriter, r *http.Request) {
-	createProductPayload := r.Context().Value(constants.CreateProductPayloadCtxKey{}).(dto.CreateProductPayload)
+	createProductPayload := r.Context().Value(constants.CreateProductPayloadCtxKey{}).(*dto.CreateProductPayload)
 
-	product, err := c.productservice.CreateProduct(createProductPayload)
+	product, err := c.productservice.CreateProduct(*createProductPayload)
 	if err != nil {
 		utils.Dispatch500Error(w, err)
 		return
@@ -23,7 +23,7 @@ func (c *Controller) CreateProduct(w http.ResponseWriter, r *http.Request) {
 }
 
 func (c *Controller) UpdateProduct(w http.ResponseWriter, r *http.Request) {
-	updateProductPayload := r.Context().Value(constants.UpdateProductPayloadCtxKey{}).(dto.UpdateProductPayload)
+	updateProductPayload := r.Context().Value(constants.UpdateProductPayloadCtxKey{}).(*dto.UpdateProductPayload)
 	productIdStr, err := utils.GetPathParam(r, "id")
 	if err != nil {
 		utils.Dispatch400Error(w, "Invalid Payload", err)
@@ -33,7 +33,7 @@ func (c *Controller) UpdateProduct(w http.ResponseWriter, r *http.Request) {
 		utils.Dispatch400Error(w, "Invalid Payload, product Id must be an integer", err)
 	}
 
-	product, err := c.productservice.UpdateProduct(uint(productId), updateProductPayload)
+	product, err := c.productservice.UpdateProduct(uint(productId), *updateProductPayload)
 	if err != nil {
 		utils.Dispatch500Error(w, err)
 		return
