@@ -27,7 +27,7 @@ func AuthMiddleware(next http.Handler) http.Handler {
 		ctx := context.WithValue(r.Context(), constants.AuthClaimCtxKey{}, claim.Payload)
 		ctx = context.WithValue(ctx, constants.UserRoleCtxKey{}, claim.Payload["role"])
 		ctx = context.WithValue(ctx, constants.UserEmailCtxKey{}, claim.Payload["email"])
-		ctx = context.WithValue(ctx, constants.UserIdCtxKey{}, claim.Payload["id"])
+		ctx = context.WithValue(ctx, constants.UserIdCtxKey{}, uint(claim.Payload["id"].(float64)))
 
 		r = r.WithContext(ctx)
 

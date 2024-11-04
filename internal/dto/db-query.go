@@ -21,5 +21,5 @@ type CreateUpdateDBProduct struct {
 // order management queries
 type CreateDBOrder struct {
 	UserID uint `json:"user_id"`
-	Items  []CreateOrderItemPayload
+	Items  []*CreateOrderItemPayload
 }

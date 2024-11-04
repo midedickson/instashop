@@ -53,14 +53,14 @@ func NewOrderService(productService IProductService, orderRepository OrderReposi
 
 func (o *OrderService) CreateOrder(orderPayload dto.CreateOrderPayload, user *entity.User) (*entity.Order, error) {
 	// create new order with products from product service
-	var orderItems []dto.CreateOrderItemPayload
+	var orderItems []*dto.CreateOrderItemPayload
 	for _, item := range orderPayload.Items {
 		product, err := o.productService.GetProductByID(item.ProductID)
 		if err != nil {
 			continue
 		}
 
-		orderItems = append(orderItems, dto.CreateOrderItemPayload{
+		orderItems = append(orderItems, &dto.CreateOrderItemPayload{
 			ProductID: product.ID,
 			Quantity:  item.Quantity,
 		})
@@ -88,16 +88,11 @@ func (o *OrderService) CreateOrder(orderPayload dto.CreateOrderPayload, user *en
 func (o *OrderService) GetAllOrdersForUser(userID uint) ([]*entity.Order, error) {
 
 	// retrieve all orders from the database for the given user
-	orders := []*entity.Order{
-		{
-			ID:      uint(1),
-			OwnerID: userID,
-			Status:  "pending",
-			Items:   []*entity.OrderItem{},
-		},
+	orders, err := o.orderRepository.GetAllOrdersForUser(userID)
+	if err != nil {
+		return nil, err
 	}
-
-	return orders, nil
+	return utils.MapConcurrent(orders, func(order *models.Order) *entity.Order { return order.ToEntity() }), nil
 }
 
 func (o *OrderService) GetAllOrders() ([]*entity.Order, error) {
@@ -112,14 +107,12 @@ func (o *OrderService) GetAllOrders() ([]*entity.Order, error) {
 }
 
 func (o *OrderService) GetOrderByID(id uint) (*entity.Order, error) {
-	order := &entity.Order{
-		ID:      uint(1),
-		OwnerID: uint(23),
-		Status:  "pending",
-		Items:   []*entity.OrderItem{},
+	order, err := o.orderRepository.GetOrderByID(id)
+	if err != nil {
+		return nil, err
 	}
 
-	return order, nil
+	return order.ToEntity(), nil
 }
 
 func (o *OrderService) UpdateOrderStatus(orderID uint, updateStatusPayload dto.UpdateOrderStatusPayload) (*entity.Order, error) {
@@ -160,7 +153,7 @@ func (o *OrderService) CancelOrder(orderID, userId uint) error {
 	}
 
 	// check if the order is cancelled by the owner
-	if order.OwnerID != userId {
+	if int64(order.OwnerID) != int64(userId) {
 		return utils.ErrUnauthorized
 	}
 

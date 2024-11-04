@@ -37,6 +37,7 @@ func ConnectRoutes(r *mux.Router, controller *controllers.Controller) {
 
 	// product management routes
 	protected.HandleFunc("/products", controller.GetAllProducts).Methods("GET")
+	protected.HandleFunc("/products/{id}", controller.GetProduct).Methods("GET")
 
 	// admin-only management routes
 	protected.Handle("/products",
@@ -57,7 +58,7 @@ func ConnectRoutes(r *mux.Router, controller *controllers.Controller) {
 		middlewares.Chain(
 			http.HandlerFunc(controller.DeleteProduct),
 			middlewares.PermissionMiddleware(constants.ADMIN_ROLE),
-		)).Methods("GET")
+		)).Methods("DELETE")
 
 	// order management routes
 	protected.Handle("/orders",

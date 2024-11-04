@@ -9,9 +9,11 @@ import (
 
 type OrderItem struct {
 	gorm.Model
-	Product  *Product `gorm:"product" json:"product"`
-	Quantity int      `gorm:"quantity" json:"quantity"`
-	OrderID  uint     `gorm:"order_id" json:"order_id"`
+	Product   *Product `gorm:"product" json:"product"`
+	ProductID uint     `gorm:"product_id" json:"product_id"`
+	Quantity  int      `gorm:"quantity" json:"quantity"`
+	Order     *Order   `gorm:"foreignKey:OrderID" json:"order"`
+	OrderID   uint     `gorm:"column:order_id" json:"order_id"`
 }
 
 type Order struct {
@@ -19,7 +21,7 @@ type Order struct {
 	OwnerID uint         `gorm:"owner_id" json:"owner_id"`
 	Owner   User         `gorm:"owner" json:"owner"`
 	Status  string       `gorm:"status" json:"status"`
-	Items   []*OrderItem `gorm:"order_items" json:"order_items"`
+	Items   []*OrderItem `gorm:"foreignKey:OrderID"`
 	Total   constants.Money
 }
 

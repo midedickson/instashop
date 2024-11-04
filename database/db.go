@@ -34,7 +34,12 @@ func ConnectToDB() {
 
 func AutoMigrate() {
 	log.Println("Auto Migrating Models...")
-	err := DB.AutoMigrate(&models.User{}, &models.Product{}, &models.Order{})
+	err := DB.AutoMigrate(
+		&models.User{},
+		&models.Product{},
+		&models.Order{},
+		&models.OrderItem{},
+	)
 	if err != nil {
 		panic(err)
 	}
