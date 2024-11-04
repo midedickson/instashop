@@ -12,6 +12,7 @@ import (
 
 func ConnectRoutes(r *mux.Router, controller *controllers.Controller) {
 	r.HandleFunc("/", controller.Hello).Methods("GET")
+	r = r.PathPrefix("/api/v1").Subrouter()
 	// authentication routes
 	r.Handle("/auth/signup",
 		middlewares.Chain(
@@ -64,7 +65,6 @@ func ConnectRoutes(r *mux.Router, controller *controllers.Controller) {
 	protected.Handle("/orders",
 		middlewares.Chain(
 			http.HandlerFunc(controller.CreateOrder),
-			middlewares.PermissionMiddleware(constants.ADMIN_ROLE),
 			middlewares.ValidatePayloadMiddleware(&dto.CreateOrderPayload{}, constants.CreateOrderPayloadCtxKey{}),
 		)).Methods("POST")
 

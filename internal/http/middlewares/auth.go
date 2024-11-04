@@ -42,7 +42,7 @@ func PermissionMiddleware(requiredRole string) Middleware {
 			userRole := r.Context().Value(constants.UserRoleCtxKey{}).(string)
 
 			if userRole != requiredRole {
-				utils.Dispatch403Error(w, "Invalid or Expired token", utils.ErrForbidden)
+				utils.Dispatch403Error(w, "You are not allowed to carryout this action", utils.ErrForbidden)
 				return
 			}
 
